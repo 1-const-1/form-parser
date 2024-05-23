@@ -1,6 +1,4 @@
-
-const fs = require("fs");
-
+"use strict";
 
 class ParsedForm {
 
@@ -22,13 +20,21 @@ class ParsedForm {
 
     }
 
+    show() {
+
+        console.log("---INCOMIG-FORM---");
+
+        console.log(this.data);
+
+    }
+
 }
 
 class InputData {
 
     constructor () {
 
-        this.headers = {}
+        this.headers = {};
 
         this.name = undefined;
 
@@ -116,8 +122,6 @@ function FormParser (data) {
 
     const regexp_file = /filename="([^"]+)"/;
 
-   // console.log(uInt8Buf);
-
     for (let i = 0; i < uInt8Buf.length; i++) { 
 
         if (!blbound && !blhead && !blval) {
@@ -141,14 +145,10 @@ function FormParser (data) {
                         string += String.fromCharCode(val);
     
                     });
-    
-                    //console.log(string);
 
                     const match = string.match(regexp_bound);
 
                     if (match) {
-
-                        //console.log(match);
 
                         blhead = true;
 
@@ -175,24 +175,18 @@ function FormParser (data) {
                         string += String.fromCharCode(val);
     
                     });
-    
-                    //console.log(string);
 
                     const match_disposition = string.match(regexp_disposition);
                     
                     if (match_disposition) {
 
-                        //console.log(match_disposition);
-
-                        input.setHead("Content-Disposition", match_disposition[1]);
+                        input.setHead("Content-Disposition", match_disposition[1].trim());
 
                     }
 
                     const match_type = string.match(regexp_type);
                     
                     if (match_type) {
-
-                        //console.log(match_type);
 
                         input.setHead("Content-Type", match_type[1].trim());
 
@@ -202,17 +196,13 @@ function FormParser (data) {
 
                     if (match_name) {
 
-                        //console.log(match_name);
-
                         input.setName(match_name[1]);
 
                         const match_file = string.match(regexp_file);
 
                         if (match_file) {
     
-                            //console.log(match_file);
-    
-                            input.setFileName(match_file[1]);
+                            input.setFileName(match_file[1].trim());
                             
                         }
                         
@@ -222,15 +212,11 @@ function FormParser (data) {
 
                         blbound = false;
 
-                        blval = true;
-
-                        //console.log(blbound, blhead, blval);                        
+                        blval = true;                    
 
                     }
 
                     reader = [];
-
-                    //console.log(input);
 
                 }
 
@@ -252,31 +238,20 @@ function FormParser (data) {
 
                 reader = [];
 
-                //console.log(input);
+            }
+
+            if ( uInt8Buf[i] !== 10 && uInt8Buf[i] !== 13 && input.filename === undefined ) {
+
+                reader.push(uInt8Buf[i]);
 
             }
 
-            if (uInt8Buf !== 10) reader.push(uInt8Buf[i]);  
+            else if (input.filename !== undefined) reader.push(uInt8Buf[i]);
 
         }
 
     }
 
-    console.log(form.data);
-
-    for (let i in form.data) {
-
-        if (form.data[i].filename !== undefined) {
-
-            fs.writeFileSync("./"+form.data[i].filename, Buffer.from(form.data[i].value));
-
-        } else {
-
-            console.log(Buffer.from(form.data[i].value).toString());
-        }
-
-    }
-
-    //
+    return form;
 
 }
